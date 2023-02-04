@@ -9,23 +9,25 @@ module.exports = function(app) {
     //{ stock: [ 'GOOG', 'MSFT' ], like: 'false' }
     //{ stock: [ 'GOOG', 'MSFT' ], like: 'true' }
     .get(function(req, res) {
+      let proxy = 'https://stock-price-checker-proxy.freecodecamp.rocks';
+      let vers = 'v1';
+      let name = req.query.stock;
+      let like = req.query.like;
       let option = {
-        url: `https://stock-price-checker-proxy.freecodecamp.rocks/v1/stock/${req.query.stock}/quote`,
+        url: `${proxy}/${vers}/stock/${name}/quote`,
         method: 'GET',
         json: true
       }
-      let tmp = {};
+      let temp = {};
       let result = {};
       request(option, (error, response, body) => {
         if (!error) {
-          tmp.stock = req.query.stock;
-          tmp.price = body.latestPrice;
-          console.log(tmp);
-          result.stockData = tmp;
-          console.log(result);
+          temp.stock = req.query.stock;
+          temp.price = body.latestPrice;
+          result.stockData = temp;
+          res.send(result);
         }
       });
-      res.json(result);
     }
   );
 };
