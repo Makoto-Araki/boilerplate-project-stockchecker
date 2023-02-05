@@ -41,16 +41,16 @@ const likeSchema = new mongoose.Schema({
 const Likes = mongoose.model('Likes', likeSchema);
 
 // Get Stock likes from MongoDB Collection
-const getStockLikesFromCol = function(name) {
-  const opt1 = { like: name };
-  const opt2 = { _id: 0, __v: 0 };
+const getStockLikesFromCol = function(req) {
+  let opt1 = { like: req.query.stock };
+  let opt2 = { _id: 0, __v: 0 };
   return new Promise(function(resolve) {
     Likes
       .find(opt1)
       .select(opt2)
       .exec(function(err, doc) {
         if (!err) {
-          resolve(doc);
+          resolve(doc.length);
         }
       });
   });
@@ -61,27 +61,38 @@ const proxy = 'https://stock-price-checker-proxy.freecodecamp.rocks';
 const version = 'v1';
 
 // Get Stock Price from Proxy API
-const getStockPriceFromAPI = function(name) {
+const getStockPriceFromAPI = function(req) {
   return new Promise(function(resolve) {
     let option = {
-      url: `${proxy}/${version}/stock/${name}/quote`,
+      url: `${proxy}/${version}/stock/${req.query.stock}/quote`,
       method: 'GET',
       json: true
     }
-    request(option, (error, response, body) => {
-      if (!error) {
+    request(option, (err, res, body) => {
+      if (!err) {
         resolve(body.latestPrice);
       }
     });
   });
 }
 
+// Get remote client IP address
+const getRemoteClientIpAddr = function(req) {
+  return new Promise(function(resolve) {
+    if (req.connection && req.connection.remoteAddress) {
+      resolve(req.connection.remoteAddress);
+    }
+  });
+}
+
 // Main Processing
-async function mainProcess(name) {
-  let result1 = await getStockPriceFromAPI(name);
-  let result2 = await getStockLikesFromCol(name);
-  console.log(`AAA : ${result1}`);
-  console.log(`BBB : ${result2}`);
+async function mainProcess(req) {
+  let info1 = await getStockPriceFromAPI(req);
+  let info2 = await getStockLikesFromCol(req);
+  let info3 = await getRemoteClientIpAddr(req);
+  console.log(`AAA : ${info1}`);
+  console.log(`BBB : ${info2}`);
+  console.log(`CCC : ${info3}`);
 }
 
 //{ stock: 'GOOG', like: 'false' }
@@ -89,11 +100,11 @@ async function mainProcess(name) {
 //{ stock: [ 'GOOG', 'MSFT' ], like: 'false' }
 //{ stock: [ 'GOOG', 'MSFT' ], like: 'true' }
 
-// Main Process
+// Web - API
 module.exports = function(app) {
   app.route('/api/stock-prices')
     .get(function(req, res) {
-      mainProcess(req.query.stock);
+      mainProcess(req);
     }
   );
 };
