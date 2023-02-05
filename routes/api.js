@@ -56,6 +56,11 @@ const getStockLikesFromCol = function(req) {
   });
 }
 
+// Check if a combination of IP address and likes exists
+const chkAddrAndLike = function(addr, like) {
+  //
+}
+
 // Constant for Proxy API
 const proxy = 'https://stock-price-checker-proxy.freecodecamp.rocks';
 const version = 'v1';
