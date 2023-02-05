@@ -1,20 +1,26 @@
 'use strict';
 
 // Import Module
+const mongoose = require('mongoose');
 const request = require('request');
-const mongodb = require('mongodb');
+const dotenv = require('dotenv');
+
+// Secrets Config
+dotenv.config();
 
 // Secrets
-const user = process.env['user']
-const pass = process.env['pass']
+const user = process.env['user'];
+const pass = process.env['pass'];
+const cluster = process.env['cluster'];
+const option = process.env['option'];
+const database = process.env['database'];
+
+// Constant for Mongo Database
+const mongouri = `mongodb+srv://${user}:${pass}@${cluster}/${database}?${option}`;
 
 // Constant for Proxy API
 const proxy = 'https://stock-price-checker-proxy.freecodecamp.rocks';
 const version = 'v1';
-
-// Constant for Mongo Collection
-const client = mongodb.MongoClient;
-const mongouri = `mongodb+srv://${user}:${pass}@cluster0.snt16.mongodb.net/test?retryWrites=true&w=majority`;
 
 // Get Stock Price from Proxy API
 const getStockPriceFromAPI = function(name) {
@@ -36,29 +42,32 @@ const getStockPriceFromAPI = function(name) {
 
 // Get Stock likes from Mongo Collection
 const getStockLikesFromCol = function(name) {
-  return new Promise(function(resolve) {
+  //return new Promise(function(resolve) {
     client.connect(mongouri, { useNewUrlParser: true }, function(err, con) {
-      console.log('C01');
-      let collection = con.db('test').collection('likes');
-      collection.find().toArray(function(errs, cols) {
-        if (!errs) {
-          resolve(cols);
-        } else {
-          reject(errs);
-        }
-      });
-      console.log('C02');
+      if (!err) {
+        console.log(err);
+      } else {
+        let collection = con.db('test').collection('likes');
+        collection.find().toArray(function(errs, cols) {
+          if (!errs) {
+            console.log(cols);
+          } else {
+            console.log(errs);
+          }
+        });
+      }
       con.close();
     });
-  });
+  //});
 }
 
 // Main Processing
 async function mainProcess(name) {
   let result1 = await getStockPriceFromAPI(name);
-  let result2 = await getStockLikesFromCol(name);
+  //let result2 = await getStockLikesFromCol(name);
   console.log(result1);
-  console.log(result2);
+  getStockLikesFromCol(name);
+  //console.log(result2);
 }
 //{ stock: 'GOOG', like: 'false' }
 //{ stock: 'GOOG', like: 'true' }
