@@ -40,6 +40,22 @@ const likeSchema = new mongoose.Schema({
 // Model is made from schema
 const Likes = mongoose.model('Likes', likeSchema);
 
+// Get Stock likes from MongoDB Collection
+const getStockLikesFromCol = function(name) {
+  const opt1 = { like: name };
+  const opt2 = { _id: 0, __v: 0 };
+  return new Promise(function(resolve) {
+    Likes
+      .find(opt1)
+      .select(opt2)
+      .exec(function(err, doc) {
+        if (!err) {
+          resolve(doc);
+        }
+      });
+  });
+}
+
 // Constant for Proxy API
 const proxy = 'https://stock-price-checker-proxy.freecodecamp.rocks';
 const version = 'v1';
@@ -60,19 +76,14 @@ const getStockPriceFromAPI = function(name) {
   });
 }
 
-// Get Stock likes from Mongo Collection
-const getStockLikesFromCol = function(name) {
-  //
-}
-
 // Main Processing
 async function mainProcess(name) {
   let result1 = await getStockPriceFromAPI(name);
-  //let result2 = await getStockLikesFromCol(name);
-  console.log(result1);
-  getStockLikesFromCol(name);
-  //console.log(result2);
+  let result2 = await getStockLikesFromCol(name);
+  console.log(`AAA : ${result1}`);
+  console.log(`BBB : ${result2}`);
 }
+
 //{ stock: 'GOOG', like: 'false' }
 //{ stock: 'GOOG', like: 'true' }
 //{ stock: [ 'GOOG', 'MSFT' ], like: 'false' }
