@@ -12,11 +12,33 @@ dotenv.config();
 const user = process.env['user'];
 const pass = process.env['pass'];
 const cluster = process.env['cluster'];
-const option = process.env['option'];
 const database = process.env['database'];
+const option = process.env['option'];
 
 // Constant for Mongo Database
 const mongouri = `mongodb+srv://${user}:${pass}@${cluster}/${database}?${option}`;
+
+// MongoDB Connect Config
+mongoose.set('strictQuery', false);
+
+// MongoDB Connect
+mongoose
+  .connect(mongouri)
+  .then(function() {
+    console.log('MongoDB connected');
+  })
+  .catch(function(error) {
+    console.log(error);
+  });
+
+// Schema
+const likeSchema = new mongoose.Schema({
+  addr: { type: String },
+  like: { type: String }
+});
+
+// Model is made from schema
+const Likes = mongoose.model('Likes', likeSchema);
 
 // Constant for Proxy API
 const proxy = 'https://stock-price-checker-proxy.freecodecamp.rocks';
@@ -30,35 +52,17 @@ const getStockPriceFromAPI = function(name) {
       method: 'GET',
       json: true
     }
-    console.log('B01');
     request(option, (error, response, body) => {
       if (!error) {
         resolve(body.latestPrice);
       }
     });
-    console.log('B02');
   });
 }
 
 // Get Stock likes from Mongo Collection
 const getStockLikesFromCol = function(name) {
-  //return new Promise(function(resolve) {
-    client.connect(mongouri, { useNewUrlParser: true }, function(err, con) {
-      if (!err) {
-        console.log(err);
-      } else {
-        let collection = con.db('test').collection('likes');
-        collection.find().toArray(function(errs, cols) {
-          if (!errs) {
-            console.log(cols);
-          } else {
-            console.log(errs);
-          }
-        });
-      }
-      con.close();
-    });
-  //});
+  //
 }
 
 // Main Processing
