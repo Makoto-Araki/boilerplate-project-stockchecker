@@ -108,16 +108,30 @@ async function mainProcess(req) {
   console.log(`CCC : ${info3}`);
 }
 
-//{ stock: 'GOOG', like: 'false' }
-//{ stock: 'GOOG', like: 'true' }
-//{ stock: [ 'GOOG', 'MSFT' ], like: 'false' }
-//{ stock: [ 'GOOG', 'MSFT' ], like: 'true' }
+// [API]?stock=GOOG
+// { stock: 'GOOG' }
+
+// [API]?stock=GOOG&stock=MSFT
+// { stock: ['GOOG', 'MSFT'] }
+
+// [API]?stock=GOOG&stock=MSFT&stock=TSLA
+// { stock: ['GOOG', 'MSFT', 'TSLA'] }
+
+// [API]?like=false
+// { like: 'false' }
+
+// [API]?like=false&like=true
+// { like: ['false', 'true'] }
+
+// [API]?like=false&like=true&like=false
+// { like: ['false', 'true', 'false'] }
 
 // Web - API
 module.exports = function(app) {
   app.route('/api/stock-prices')
     .get(function(req, res) {
-      mainProcess(req);
+      //mainProcess(req);
+      console.dir(req.query);
     }
   );
 };
