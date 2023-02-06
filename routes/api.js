@@ -84,8 +84,16 @@ const getStockPriceFromAPI = function(req) {
 // Get remote client IP address
 const getRemoteClientIpAddr = function(req) {
   return new Promise(function(resolve) {
-    if (req.connection && req.connection.remoteAddress) {
+    if (req.headers['x-forwarded-for']) {
+      resolve(req.headers['x-forwarded-for']);
+    } else if (req.connection && req.connection.remoteAddress) {
       resolve(req.connection.remoteAddress);
+    } else if (req.connection.socket && req.connection.socket.remoteAddress) {
+      resolve(req.connection.socket.remoteAddress);
+    } else if (req.socket && req.socket.remoteAddress) {
+      resolve(req.socket.remoteAddress);
+    } else {
+      resolve('0.0.0.0');
     }
   });
 }
