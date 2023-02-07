@@ -44,13 +44,15 @@ const Likes = mongoose.model('Likes', likeSchema);
 const getStockLikes = function(name) {
   let opt1 = { like: name };
   let opt2 = { _id: 0, __v: 0 };
-  return new Promise(function(resolve) {
+  return new Promise(function(resolve, reject) {
     Likes
       .find(opt1)
       .select(opt2)
       .exec(function(err, doc) {
         if (!err) {
           resolve(doc.length);
+        } else {
+          reject(err);
         }
       });
   });
@@ -67,7 +69,7 @@ const version = 'v1';
 
 // Get Stock Price from Proxy API
 const getStockPrice = function(name) {
-  return new Promise(function(resolve) {
+  return new Promise(function(resolve, reject) {
     let option = {
       url: `${proxy}/${version}/stock/${name}/quote`,
       method: 'GET',
@@ -76,13 +78,15 @@ const getStockPrice = function(name) {
     request(option, (err, res, body) => {
       if (!err) {
         resolve(body.latestPrice);
+      } else {
+        reject(err);
       }
     });
   });
 }
 
 // Get remote client IP address
-const getRemoteClientIpAddr = function(req) {
+const getClientAddr = function(req) {
   if (req.headers['x-forwarded-for']) {
     return req.headers['x-forwarded-for'];
   } else if (req.connection && req.connection.remoteAddress) {
@@ -98,11 +102,27 @@ const getRemoteClientIpAddr = function(req) {
 
 // Main Processing
 const mainProcess = async function(req) {
-  let addr = getRemoteClientIpAddr(req);
+  let addr = getClientAddr(req);
   let result = {};
   let object = {};
   if (Array.isArray(req.query.stock) === false) {
     object.stock = req.query.stock;
+    /*
+    getStockPrice(req.query.stock)
+      .then(function(data) {
+        object.price = data;
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+    getStockLikes(req.query.stock)
+      .then(function(data) {
+        object.likes = data;
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+    */
     object.price = await getStockPrice(req.query.stock);
     object.likes = await getStockLikes(req.query.stock);
     result.stockData = object;
