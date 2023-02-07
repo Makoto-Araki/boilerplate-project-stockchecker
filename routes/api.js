@@ -41,8 +41,8 @@ const likeSchema = new mongoose.Schema({
 const Likes = mongoose.model('Likes', likeSchema);
 
 // Get Stock likes from MongoDB Collection
-const getStockLikesFromCol = function(req) {
-  let opt1 = { like: req.query.stock };
+const getStockLikes = function(name) {
+  let opt1 = { like: name };
   let opt2 = { _id: 0, __v: 0 };
   return new Promise(function(resolve) {
     Likes
@@ -66,10 +66,10 @@ const proxy = 'https://stock-price-checker-proxy.freecodecamp.rocks';
 const version = 'v1';
 
 // Get Stock Price from Proxy API
-const getStockPriceFromAPI = function(req) {
+const getStockPrice = function(name) {
   return new Promise(function(resolve) {
     let option = {
-      url: `${proxy}/${version}/stock/${req.query.stock}/quote`,
+      url: `${proxy}/${version}/stock/${name}/quote`,
       method: 'GET',
       json: true
     }
@@ -83,29 +83,37 @@ const getStockPriceFromAPI = function(req) {
 
 // Get remote client IP address
 const getRemoteClientIpAddr = function(req) {
-  return new Promise(function(resolve) {
-    if (req.headers['x-forwarded-for']) {
-      resolve(req.headers['x-forwarded-for']);
-    } else if (req.connection && req.connection.remoteAddress) {
-      resolve(req.connection.remoteAddress);
-    } else if (req.connection.socket && req.connection.socket.remoteAddress) {
-      resolve(req.connection.socket.remoteAddress);
-    } else if (req.socket && req.socket.remoteAddress) {
-      resolve(req.socket.remoteAddress);
-    } else {
-      resolve('0.0.0.0');
-    }
-  });
+  if (req.headers['x-forwarded-for']) {
+    return req.headers['x-forwarded-for'];
+  } else if (req.connection && req.connection.remoteAddress) {
+    return req.connection.remoteAddress;
+  } else if (req.connection.socket && req.connection.socket.remoteAddress) {
+    return req.connection.socket.remoteAddress;
+  } else if (req.socket && req.socket.remoteAddress) {
+    return req.socket.remoteAddress;
+  } else {
+    return '0.0.0.0';
+  }
 }
 
 // Main Processing
-async function mainProcess(req) {
-  let info1 = await getStockPriceFromAPI(req);
-  let info2 = await getStockLikesFromCol(req);
-  let info3 = await getRemoteClientIpAddr(req);
-  console.log(`AAA : ${info1}`);
-  console.log(`BBB : ${info2}`);
-  console.log(`CCC : ${info3}`);
+const mainProcess = async function(req) {
+  let addr = getRemoteClientIpAddr(req);
+  let result = {};
+  let object = {};
+  if (Array.isArray(req.query.stock) === false) {
+    object.stock = req.query.stock;
+    object.price = await getStockPrice(req.query.stock);
+    object.likes = await getStockLikes(req.query.stock);
+    result.stockData = object;
+  }
+  console.dir(result);
+  return result;
+  //let info1 = await getStockPriceFromAPI(req);
+  //let info2 = await getStockLikesFromCol(req);
+  //console.log(`AAA : ${info1}`);
+  //console.log(`BBB : ${info2}`);
+  //console.log(`CCC : ${info3}`);
 }
 
 // [API]?stock=GOOG
@@ -130,8 +138,9 @@ async function mainProcess(req) {
 module.exports = function(app) {
   app.route('/api/stock-prices')
     .get(function(req, res) {
-      //mainProcess(req);
-      console.dir(req.query);
+      //let result = mainProcess(req);
+      console.dir(mainProcess(req));
+      //res.send(result);
     }
   );
 };
