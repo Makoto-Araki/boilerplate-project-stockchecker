@@ -58,8 +58,8 @@ const getStockLikes = function(name) {
   });
 }
 
-// Check if a combination of IP address and likes exists
-const chkAddrAndLike = function(addr, like) {
+// Set a combination of IP address and stock name in MongoDB collection
+const setStockLikes = function(addr, name) {
   //
 }
 
@@ -100,42 +100,6 @@ const getClientAddr = function(req) {
   }
 }
 
-// Main Processing
-const mainProcess = async function(req) {
-  let addr = getClientAddr(req);
-  let result = {};
-  let object = {};
-  if (Array.isArray(req.query.stock) === false) {
-    object.stock = req.query.stock;
-    /*
-    getStockPrice(req.query.stock)
-      .then(function(data) {
-        object.price = data;
-      })
-      .catch(function(error) {
-        console.log(error);
-      });
-    getStockLikes(req.query.stock)
-      .then(function(data) {
-        object.likes = data;
-      })
-      .catch(function(error) {
-        console.log(error);
-      });
-    */
-    object.price = await getStockPrice(req.query.stock);
-    object.likes = await getStockLikes(req.query.stock);
-    result.stockData = object;
-  }
-  console.dir(result);
-  return result;
-  //let info1 = await getStockPriceFromAPI(req);
-  //let info2 = await getStockLikesFromCol(req);
-  //console.log(`AAA : ${info1}`);
-  //console.log(`BBB : ${info2}`);
-  //console.log(`CCC : ${info3}`);
-}
-
 // [API]?stock=GOOG
 // { stock: 'GOOG' }
 
@@ -158,9 +122,28 @@ const mainProcess = async function(req) {
 module.exports = function(app) {
   app.route('/api/stock-prices')
     .get(function(req, res) {
-      //let result = mainProcess(req);
-      console.dir(mainProcess(req));
-      //res.send(result);
+      let result = {};
+      let object = {};
+      if (Array.isArray(req.query.stock) === false) {
+        object.stock = req.query.stock;
+        getStockPrice(req.query.stock)
+          .then(function(data1) {
+            object.price = data1;
+            return getStockLikes(req.query.stock);
+          })
+          .then(function(data2) {
+            object.likes = data2;
+            result.stockData = object;
+          })
+          .finally(function() {
+            res.send(result);
+            // async process is ending
+          });
+        if(req.query.hasOwnProperty('like') && req.query.like === 'true') {
+          console.log('AAA');
+        }
+      }
+      //res.send(mainProcess(req));
     }
   );
 };
