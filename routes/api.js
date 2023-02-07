@@ -60,7 +60,18 @@ const getStockLikes = function(name) {
 
 // Set a combination of IP address and stock name in MongoDB collection
 const setStockLikes = function(addr, name) {
-  //
+  return new Promise(function(resolve, reject) {
+    let entry = new Likes();
+    entry.addr = addr;
+    entry.like = name;
+    entry.save(function(err, doc) {
+      if (!err) {
+        resolve(`addr : ${doc.addr} like : ${doc.like}`);
+      } else {
+        reject(err);
+      }
+    });
+  });
 }
 
 // Constant for Proxy API
@@ -137,11 +148,15 @@ module.exports = function(app) {
           })
           .finally(function() {
             res.send(result);
-            // async process is ending
+            // Async process is completed
           });
         if(req.query.hasOwnProperty('like') && req.query.like === 'true') {
-          console.log('AAA');
+          setStockLikes(getClientAddr(req), req.query.stock)
+            .then(function(data3) {
+              console.log(data3);
+            });
         }
+        res.send(result);
       }
       //res.send(mainProcess(req));
     }
