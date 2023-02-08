@@ -138,21 +138,51 @@ const getClientAddr = function(req) {
 
 // Main Process
 const mainProcess = async function(req) {
+  let addr = getClientAddr(req);
+  let name1 = '';
+  let name2 = '';
+  let flg1 = false;
+  let flg2 = false;
+  let price1 = 0;
+  let price2 = 0;
+  let likes1 = 0;
+  let likes2 = 0;
   if (Array.isArray(req.query.stock) === false) {
-    let addr = getClientAddr(req);
-    let name = req.query.stock;
-    let flg = await chkAddrStockPairs(addr, name);
-    let result = {
+    name1 = req.query.stock;
+    flg1 = await chkAddrStockPairs(addr, name1);
+    let result1 = {
       stockData: {
         stock: req.query.stock,
         price: await getStockPrice(req.query.stock),
         likes: await getStockLikes(req.query.stock)
       }
     }
-    if (req.query.like === 'true' && flg === false) {
+    if (req.query.like === 'true' && flg1 === false) {
       await setStockLikes(addr, req.query.stock);
     }
-    return result;
+    return result1;
+  } else {
+    name1 = req.query.stock[0];
+    name2 = req.query.stock[1];
+    flg1 = await chkAddrStockPairs(addr, name1);
+    flg2 = await chkAddrStockPairs(addr, name2);
+    price1 = await getStockPrice(name1);
+    price2 = await getStockPrice(name2);
+    likes1 = await getStockLikes(name1);
+    likes2 = await getStockLikes(name2);
+    let result2 = {
+      stockData: [
+        { stock: name1, price: price1, rel_likes: likes1 - likes2 },
+        { stock: name2, price: price2, rel_likes: likes2 - likes1 }
+      ]
+    };
+    if (req.query.like === 'true' && flg1 === false) {
+      await setStockLikes(addr, name1);
+    }
+    if (req.query.like === 'true' && flg2 === false) {
+      await setStockLikes(addr, name2);
+    }
+    return result2;
   }
 }
 
