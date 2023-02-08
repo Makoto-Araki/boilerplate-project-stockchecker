@@ -74,6 +74,24 @@ const setStockLikes = function(addr, name) {
   });
 }
 
+// Check if a combination of IP address and stock name exists
+const chkAddrStockPairs = function(addr, name) {
+  let opt1 = { addr: addr, like: name };
+  let opt2 = { _id: 0, __v: 0 };
+  return new Promise(function(resolve, reject) {
+    Likes
+      .find(opt1)
+      .select(opt2)
+      .exec(function(err, doc) {
+        if (!err) {
+          resolve(doc.length);
+        } else {
+          reject(err);
+        }
+      });
+  });
+}
+
 // Constant for Proxy API
 const proxy = 'https://stock-price-checker-proxy.freecodecamp.rocks';
 const version = 'v1';
@@ -111,54 +129,35 @@ const getClientAddr = function(req) {
   }
 }
 
-// [API]?stock=GOOG
-// { stock: 'GOOG' }
-
-// [API]?stock=GOOG&stock=MSFT
-// { stock: ['GOOG', 'MSFT'] }
-
-// [API]?stock=GOOG&stock=MSFT&stock=TSLA
-// { stock: ['GOOG', 'MSFT', 'TSLA'] }
-
-// [API]?like=false
-// { like: 'false' }
-
-// [API]?like=false&like=true
-// { like: ['false', 'true'] }
-
-// [API]?like=false&like=true&like=false
-// { like: ['false', 'true', 'false'] }
+// Main Process
+const mainProcess = async function(req) {
+  if (Array.isArray(req.query.stock) === false) {
+    let addr = getClientAddr(req);
+    let name = req.query.stock;
+    let pair = await chkAddrStockPairs(addr, name);
+    let result = {
+      stockData: {
+        stock: req.query.stock,
+        price: await getStockPrice(req.query.stock),
+        likes: await getStockLikes(req.query.stock)
+      }
+    }
+    if (req.query.like === 'true' && pair === 0) {
+      await setStockLikes(addr, req.query.stock);
+    }
+    return result;
+  }
+}
 
 // Web - API
 module.exports = function(app) {
   app.route('/api/stock-prices')
     .get(function(req, res) {
-      let result = {};
-      let object = {};
-      if (Array.isArray(req.query.stock) === false) {
-        object.stock = req.query.stock;
-        getStockPrice(req.query.stock)
-          .then(function(data1) {
-            object.price = data1;
-            return getStockLikes(req.query.stock);
-          })
-          .then(function(data2) {
-            object.likes = data2;
-            result.stockData = object;
-          })
-          .finally(function() {
-            res.send(result);
-            // Async process is completed
-          });
-        if(req.query.hasOwnProperty('like') && req.query.like === 'true') {
-          setStockLikes(getClientAddr(req), req.query.stock)
-            .then(function(data3) {
-              console.log(data3);
-            });
-        }
-        res.send(result);
-      }
-      //res.send(mainProcess(req));
+      mainProcess(req)
+        .then(function(result) {
+          console.log(result);
+          res.send(result);
+        });
     }
   );
 };
