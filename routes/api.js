@@ -89,6 +89,7 @@ const chkAddrStockPairs = function(addr, name) {
           for (let i = 0; i < doc.length; i++) {
             if (bcrypt.compareSync(addr, doc[i].addr) && doc[i].like === name) {
               flg = true;
+              break;
             }
           }
           resolve(flg);
