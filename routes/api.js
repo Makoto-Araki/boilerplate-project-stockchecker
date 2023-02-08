@@ -4,6 +4,7 @@
 const mongoose = require('mongoose');
 const request = require('request');
 const dotenv = require('dotenv');
+const bcrypt = require('bcrypt');
 
 // Secrets Config
 dotenv.config();
@@ -62,7 +63,7 @@ const getStockLikes = function(name) {
 const setStockLikes = function(addr, name) {
   return new Promise(function(resolve, reject) {
     let entry = new Likes();
-    entry.addr = addr;
+    entry.addr = bcrypt.hashSync(addr, 12);  // saltRounds(12)
     entry.like = name;
     entry.save(function(err, doc) {
       if (!err) {
@@ -134,7 +135,7 @@ const mainProcess = async function(req) {
   if (Array.isArray(req.query.stock) === false) {
     let addr = getClientAddr(req);
     let name = req.query.stock;
-    let pair = await chkAddrStockPairs(addr, name);
+    let pair = await chkAddrStockPairs(bcrypt.hashSync(addr, 12), name);
     let result = {
       stockData: {
         stock: req.query.stock,
