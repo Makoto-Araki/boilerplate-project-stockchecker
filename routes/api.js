@@ -77,7 +77,8 @@ const setStockLikes = function(addr, name) {
 
 // Check if a combination of IP address and stock name exists
 const chkAddrStockPairs = function(addr, name) {
-  let opt1 = { addr: addr, like: name };
+  let flg = false;
+  let opt1 = {};
   let opt2 = { _id: 0, __v: 0 };
   return new Promise(function(resolve, reject) {
     Likes
@@ -85,7 +86,12 @@ const chkAddrStockPairs = function(addr, name) {
       .select(opt2)
       .exec(function(err, doc) {
         if (!err) {
-          resolve(doc.length);
+          for (let i = 0; i < doc.length; i++) {
+            if (bcrypt.compareSync(addr, doc[i].addr) && doc[i].like === name) {
+              flg = true;
+            }
+          }
+          resolve(flg);
         } else {
           reject(err);
         }
@@ -135,7 +141,7 @@ const mainProcess = async function(req) {
   if (Array.isArray(req.query.stock) === false) {
     let addr = getClientAddr(req);
     let name = req.query.stock;
-    let pair = await chkAddrStockPairs(bcrypt.hashSync(addr, 12), name);
+    let flg = await chkAddrStockPairs(addr, name);
     let result = {
       stockData: {
         stock: req.query.stock,
@@ -143,7 +149,7 @@ const mainProcess = async function(req) {
         likes: await getStockLikes(req.query.stock)
       }
     }
-    if (req.query.like === 'true' && pair === 0) {
+    if (req.query.like === 'true' && flg === false) {
       await setStockLikes(addr, req.query.stock);
     }
     return result;
