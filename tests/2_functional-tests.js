@@ -10,8 +10,8 @@ chai.use(chaiHttp);
 // Main Process
 const mainProcess = async function(name) {
   let price = await mod1.getStockPrice(name);
-  //let likes = await mod2.getStockLikes(name);
-  return price;
+  let likes = await mod2.getStockLikes(name);
+  return { price: price, likes: likes };
 }
 
 suite('Functional Tests', function() {
@@ -23,15 +23,15 @@ suite('Functional Tests', function() {
       .query({ stock: 'AAPL' })
       .end(function(err, res) {
         mainProcess('AAPL')
-          .then(function(price) {
-            assert.equal(res.status, 200);
-            assert.equal(res.type, 'application/json');
-            assert.equal(res.stockData.stock, 'AAPL');
-            assert.equal(res.stockData.price, price);
-            //assert.equal(res.stockData.likes, likes);
+          .then(function(result) {
+            assert.equal(res.body.stockData.stock, 'AAPL');
+            assert.equal(res.body.stockData.price, result.price);
+            assert.equal(res.body.stockData.likes, result.likes);
           });
         done();
       });
   });
+  /* ------------------------------------------------------------ */
+  //
   /* ------------------------------------------------------------ */
 });
