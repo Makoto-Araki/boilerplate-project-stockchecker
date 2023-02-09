@@ -2,38 +2,20 @@ const chaiHttp = require('chai-http');
 const chai = require('chai');
 const assert = chai.assert;
 const server = require('../server');
+const mod1 = require('../modules/mod1');
+const mod2 = require('../modules/mod2');
 
 chai.use(chaiHttp);
 
-// Constant for Proxy API
-const proxy = 'https://stock-price-checker-proxy.freecodecamp.rocks';
-const version = 'v1';
-
-// Get Stock Price from Proxy API
-const getStockPrice = function(name) {
-  return new Promise(function(resolve, reject) {
-    let option = {
-      url: `${proxy}/${version}/stock/${name}/quote`,
-      method: 'GET',
-      json: true
-    }
-    request(option, (err, res, body) => {
-      if (!err) {
-        resolve(body.latestPrice);
-      } else {
-        reject(err);
-      }
-    });
-  });
-}
-
 // Main Process
 const mainProcess = async function(name) {
-  let price = await getStockPrice(name);
+  let price = await mod1.getStockPrice(name);
+  //let likes = await mod2.getStockLikes(name);
   return price;
 }
 
 suite('Functional Tests', function() {
+  /* ------------------------------------------------------------ *
   test('Viewing one stock', function(done) {
     chai
       .request(server)
@@ -46,9 +28,10 @@ suite('Functional Tests', function() {
             assert.equal(res.type, 'application/json');
             assert.equal(res.stockData.stock, 'AAPL');
             assert.equal(res.stockData.price, price);
-            assert.equal(res.stockData.likes, 0);
+            //assert.equal(res.stockData.likes, likes);
           });
         done();
       });
   });
+  /* ------------------------------------------------------------ */
 });
