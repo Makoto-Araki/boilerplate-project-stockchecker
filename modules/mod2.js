@@ -33,8 +33,8 @@ const getStockLikes = function(name) {
 const setStockLikes = function(addr, name) {
   return new Promise(function(resolve, reject) {
     let entry = new Likes();
-    entry.addr = addr;
-    //entry.addr = bcrypt.hashSync(addr, 12);  // saltRounds(12)
+    //entry.addr = addr;
+    entry.addr = bcrypt.hashSync(addr, 12);  // saltRounds(12)
     entry.like = name;
     entry.save(function(err, doc) {
       if (!err) {
@@ -58,8 +58,8 @@ const chkAddrStockPairs = function(addr, name) {
       .exec(function(err, doc) {
         if (!err) {
           for (let i = 0; i < doc.length; i++) {
-            if (doc[i].addr === addr && doc[i].like === name) {
-            //if (bcrypt.compareSync(addr, doc[i].addr) && doc[i].like === name) {
+            //if (doc[i].addr === addr && doc[i].like === name) {
+            if (bcrypt.compareSync(addr, doc[i].addr) && doc[i].like === name) {
               flg = true;
               break;
             }
