@@ -105,7 +105,7 @@ module.exports = function(app) {
     .get(function(req, res) {
       mainProcess(req)
         .then(function(result) {
-          console.log(result);
+          //console.log(result);
           res.send(result);
         });
     }
