@@ -13,6 +13,12 @@ const getStockPrice = async function(name) {
   return price;
 }
 
+// Function for Clearing all documents in MongoDB collection
+const clearLikes = async function() {
+  let result = await mod2.clearLikes();
+  return `${result.deletedCount} documents was deleted`;
+}
+
 // Variables for Stock Price
 let stock1 = 0;
 let stock2 = 0;
@@ -34,8 +40,8 @@ getStockPrice('TSLA').then(function(result) {
 });
 
 suite('Functional Tests', function() {
-  //this.timeout(5000);
-  /* ------------------------------------------------------------ *
+  this.timeout(2000);
+  /* ------------------------------------------------------------ */
   test('Viewing one stock', function(done) {
     chai
       .request(server)
@@ -48,7 +54,7 @@ suite('Functional Tests', function() {
         done();
       });
   });
-  /* ------------------------------------------------------------ *
+  /* ------------------------------------------------------------ */
   test('Viewing one stock and liking it', function(done) {
     chai
       .request(server)
@@ -61,7 +67,7 @@ suite('Functional Tests', function() {
         done();
       });
   });
-  /* ------------------------------------------------------------ *
+  /* ------------------------------------------------------------ */
   test('Viewing the same stock and liking it again', function(done) {
     chai
       .request(server)
@@ -74,7 +80,7 @@ suite('Functional Tests', function() {
         done();
       });
   });
-  /* ------------------------------------------------------------ *
+  /* ------------------------------------------------------------ */
   test('Viewing two stocks', function(done) {
     chai
       .request(server)
@@ -91,7 +97,7 @@ suite('Functional Tests', function() {
         done();
       });
   });
-  /* ------------------------------------------------------------ *
+  /* ------------------------------------------------------------ */
   test('Viewing two stocks and liking them', function(done) {
     chai
       .request(server)
@@ -105,6 +111,7 @@ suite('Functional Tests', function() {
         assert.equal(res.body.stockData[1].stock, 'TSLA');
         assert.equal(res.body.stockData[1].price, stock3);
         assert.equal(res.body.stockData[1].rel_likes, 0);
+        clearLikes().then(function(result) { console.log(result); });
         done();
       });
   });

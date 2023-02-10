@@ -33,7 +33,7 @@ const getStockLikes = function(name) {
 const setStockLikes = function(addr, name) {
   return new Promise(function(resolve, reject) {
     let entry = new Likes();
-    entry.addr = bcrypt.hashSync(addr, 12);  // saltRounds(12)
+    entry.addr = bcrypt.hashSync(addr, 6);  // saltRounds(6)
     entry.like = name;
     entry.save(function(err, doc) {
       if (!err) {
@@ -70,7 +70,24 @@ const chkAddrStockPairs = function(addr, name) {
   });
 }
 
+// Clear all documents in MongoDB collection
+const clearLikes = function() {
+  let opt1 = {};
+  return new Promise(function(resolve, reject) {
+    Likes
+      .deleteMany(opt1)
+      .exec(function(err, doc) {
+        if (!err) {
+          resolve(doc);
+        } else {
+          reject(err);
+        }
+      });
+  });
+}
+
 // Exports
 exports.getStockLikes = getStockLikes;
 exports.setStockLikes = setStockLikes;
 exports.chkAddrStockPairs = chkAddrStockPairs;
+exports.clearLikes = clearLikes;
