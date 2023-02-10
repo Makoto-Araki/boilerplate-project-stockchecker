@@ -4,7 +4,6 @@
 const mongoose = require('mongoose');
 const request = require('request');
 const dotenv = require('dotenv');
-//const bcrypt = require('bcrypt');
 const mod1 = require('../modules/mod1');
 const mod2 = require('../modules/mod2');
 

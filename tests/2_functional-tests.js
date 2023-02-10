@@ -34,7 +34,7 @@ getStockPrice('TSLA').then(function(result) {
 });
 
 suite('Functional Tests', function() {
-  this.timeout(5000);
+  //this.timeout(5000);
   /* ------------------------------------------------------------ *
   test('Viewing one stock', function(done) {
     chai
