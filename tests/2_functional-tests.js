@@ -16,7 +16,7 @@ const getStockPrice = async function(name) {
 // Function for Clearing all documents in MongoDB collection
 const clearLikes = async function() {
   let result = await mod2.clearLikes();
-  return `${result.deletedCount} documents was deleted`;
+  return `Test Data (${result.deletedCount} documents) was deleted`;
 }
 
 // Variables for Stock Price
