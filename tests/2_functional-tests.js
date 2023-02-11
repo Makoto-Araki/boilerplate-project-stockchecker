@@ -40,11 +40,11 @@ getStockPrice('TSLA').then(function(result) {
 });
 
 suite('Functional Tests', function() {
-  this.timeout(2000);
   /* ------------------------------------------------------------ */
   test('Viewing one stock', function(done) {
     chai
       .request(server)
+      .keepOpen()
       .get('/api/stock-prices')
       .query({ stock: 'AAPL' })
       .end(function(err, res) {
@@ -58,6 +58,7 @@ suite('Functional Tests', function() {
   test('Viewing one stock and liking it', function(done) {
     chai
       .request(server)
+      .keepOpen()
       .get('/api/stock-prices')
       .query({ stock: 'AAPL', like: 'true' })
       .end(function(err, res) {
@@ -71,6 +72,7 @@ suite('Functional Tests', function() {
   test('Viewing the same stock and liking it again', function(done) {
     chai
       .request(server)
+      .keepOpen()
       .get('/api/stock-prices')
       .query({ stock: 'AAPL', like: 'true' })
       .end(function(err, res) {
@@ -84,6 +86,7 @@ suite('Functional Tests', function() {
   test('Viewing two stocks', function(done) {
     chai
       .request(server)
+      .keepOpen()
       .get('/api/stock-prices')
       .query({ stock: ['AAPL', 'NFLX'] })
       .end(function(err, res) {
@@ -101,6 +104,7 @@ suite('Functional Tests', function() {
   test('Viewing two stocks and liking them', function(done) {
     chai
       .request(server)
+      .keepOpen()
       .get('/api/stock-prices')
       .query({ stock: ['NFLX', 'TSLA'], like: 'true' })
       .end(function(err, res) {
